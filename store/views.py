@@ -8,4 +8,4 @@ def home(request):
 
 
 def blog(request):
-    return render(request, 'store/blog-article.html')
+    return render(request, 'store/blog-grid-view.html')
