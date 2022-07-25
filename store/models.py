@@ -1,12 +1,17 @@
+from email import message
+from email.policy import default
+from random import choice, choices
 from django.db import models
 from django.urls import reverse
 from .helper.models import TrackingModel
-
+from django.conf import settings
+from .options import ORDER_STATUS_CHOICES, ORDER_STATUS_PENDING,  ORDER_STATUS_PENDING
+from .utilis import generte_order_code
 # Create your models here.
 
 
 class Category(models.Model):
-    named = models.CharField(max_length=255)
+    name = models.CharField(max_length=255)
     slug = models.SlugField(max_length=255)
     image = models.ImageField(upload_to='photos/categories')
 
@@ -23,9 +28,10 @@ class Product(TrackingModel):
     image = models.ImageField(upload_to='photos/product')
     hover_image = models.ImageField(upload_to='photos/product')
     slug = models.SlugField(max_length=255)
-    description = models.TextField()
-    category = models.ForeignKey(Category, on_delete=models.PROTECT)
-    is_availabele  = models.BooleanField(default=True)
+    description = models.TextField(blank= True, null=True)
+    category = models.ForeignKey(
+        Category, on_delete=models.SET_NULL, null=True)
+    is_available = models.BooleanField(default=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     stock = models.PositiveIntegerField(default=0)
 
@@ -40,18 +46,66 @@ class Product(TrackingModel):
         return self.name
 
 
-class Blog(TrackingModel):   
+class Post(TrackingModel):
     title = models.CharField(max_length=255, unique=True)
     image = models.ImageField(upload_to='photos/blog')
     content = models.TextField()
-    slug = models.SlugField(max_length=255) 
+    slug = models.SlugField(max_length=255)
+    comment = models.ForeignKey('Comment', on_delete=models.SET_NULL, null=True, blank=True)
 
     class Meta:
-        verbose_name = 'Blog'
-        verbose_name_plural = "Blogs"
+        verbose_name = 'Post'
+        verbose_name_plural = "Posts"
 
     def __str__(self):
         return self.title
 
+
 class Comment(models.Model):
-    pass
+    name = models.CharField(max_length=200)
+    email = models.EmailField(max_length=230)
+    message = models.TextField()
+
+    class Meta:
+        verbose_name = 'Comment'
+        verbose_name_plural = "Comments"
+
+    def __str__(self):
+        return self.name
+
+
+class Order(models.Model):
+    customer = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, blank=True)
+    product = models.ForeignKey(
+        Product, on_delete=models.CASCADE, blank=True, null=True)
+    date_ordered = models.DateTimeField(auto_now_add=True)
+    order_status = models.CharField(
+        max_length=100, choices=ORDER_STATUS_CHOICES, default=ORDER_STATUS_PENDING)
+    order_number = models.CharField(max_length=200, blank=True)
+
+    def save(self, *args, **kwargs):
+        if self.order_number == "":
+            code = generte_order_code()
+        super().save(*args, **kwargs)
+
+
+class OrderItem(models.Model):
+    product = models.ForeignKey(
+        Product, on_delete=models.SET_NULL, null=True, blank=True)
+    order = models.ForeignKey(
+        Order, on_delete=models.SET_NULL, blank=True, null=True)
+    quantity = models.IntegerField(default=0)
+    date_added = models.DateTimeField(auto_now_add=True)
+
+
+class ShipingAddress(models.Model):
+    customer = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, blank=True)
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, blank=True)
+    address = models.CharField(max_length=256)
+    city = models.CharField(max_length=100)
+    state = models.CharField(max_length=100)
+
+    def __str__(self) -> str:
+        return self.address

@@ -9,3 +9,6 @@ def home(request):
 
 def blog(request):
     return render(request, 'store/blog-grid-view.html')
+
+def cart(request):
+    return render(request, 'store/cart.html')
