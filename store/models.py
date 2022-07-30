@@ -22,6 +22,10 @@ class Category(models.Model):
     def __str__(self):
         return self.name
 
+    def get_absolute_url(self):
+        return reverse("model_detail", kwargs={"pk": self.pk})
+    
+
 
 class Product(TrackingModel):
     name = models.CharField(max_length=234)
