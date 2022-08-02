@@ -56,6 +56,7 @@ class ShippigAddressAdmin(admin.ModelAdmin):
 @admin.register(models.Post)
 class PostAdmin(admin.ModelAdmin):
     list_display = ['title', 'slug']
+    prepopulated_fields = {'slug': ['title']}
 
 
 @admin.register(models.Order)
@@ -68,3 +69,8 @@ class OrderAdmin(admin.ModelAdmin):
 @admin.register(models.OrderItem)
 class OrderItemAdmin(admin.ModelAdmin):
     pass
+
+
+# @admin.register(models.Ord)
+# class OrderItemAdmin(admin.ModelAdmin):
+#     pass

@@ -24,7 +24,6 @@ class Category(models.Model):
 
     def get_absolute_url(self):
         return reverse("model_detail", kwargs={"pk": self.pk})
-    
 
 
 class Product(TrackingModel):
@@ -32,7 +31,7 @@ class Product(TrackingModel):
     image = models.ImageField(upload_to='photos/product')
     hover_image = models.ImageField(upload_to='photos/product')
     slug = models.SlugField(max_length=255)
-    description = models.TextField(blank= True, null=True)
+    description = models.TextField(blank=True, null=True)
     category = models.ForeignKey(
         Category, on_delete=models.SET_NULL, null=True)
     is_available = models.BooleanField(default=True)
@@ -55,7 +54,8 @@ class Post(TrackingModel):
     image = models.ImageField(upload_to='photos/blog')
     content = models.TextField()
     slug = models.SlugField(max_length=255)
-    comment = models.ForeignKey('Comment', on_delete=models.SET_NULL, null=True, blank=True)
+    comment = models.ManyToManyField(
+        'Comment',   blank=True)
 
     class Meta:
         verbose_name = 'Post'
@@ -91,6 +91,7 @@ class Order(models.Model):
     def save(self, *args, **kwargs):
         if self.order_number == "":
             code = generte_order_code()
+            self.order_number = code
         super().save(*args, **kwargs)
 
 
