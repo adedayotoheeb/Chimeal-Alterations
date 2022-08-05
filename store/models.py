@@ -1,11 +1,10 @@
 from email import message
-from email.policy import default
 from random import choice, choices
 from django.db import models
 from django.urls import reverse
 from .helper.models import TrackingModel
 from django.conf import settings
-from .options import ORDER_STATUS_CHOICES, ORDER_STATUS_PENDING,  ORDER_STATUS_PENDING
+from .options import ORDER_STATUS_CHOICES, ORDER_STATUS_PENDING, ORDER_STATUS_PENDING
 from .utilis import generte_order_code
 # Create your models here.
 
@@ -13,7 +12,6 @@ from .utilis import generte_order_code
 class Category(models.Model):
     name = models.CharField(max_length=255)
     slug = models.SlugField(max_length=255)
-    image = models.ImageField(upload_to='photos/categories')
 
     class Meta:
         verbose_name = 'Category'
@@ -48,6 +46,18 @@ class Product(TrackingModel):
     def __str__(self):
         return self.name
 
+class Comment(models.Model):
+    name = models.CharField(max_length=200)
+    email = models.EmailField(max_length=230)
+    message = models.TextField()
+
+    class Meta:
+        verbose_name = 'Comment'
+        verbose_name_plural = "Comments"
+
+    def __str__(self):
+        return self.name
+
 
 class Post(TrackingModel):
     title = models.CharField(max_length=255, unique=True)
@@ -65,19 +75,6 @@ class Post(TrackingModel):
         return self.title
 
 
-class Comment(models.Model):
-    name = models.CharField(max_length=200)
-    email = models.EmailField(max_length=230)
-    message = models.TextField()
-
-    class Meta:
-        verbose_name = 'Comment'
-        verbose_name_plural = "Comments"
-
-    def __str__(self):
-        return self.name
-
-
 class Order(models.Model):
     customer = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, blank=True)
@@ -87,6 +84,9 @@ class Order(models.Model):
     order_status = models.CharField(
         max_length=100, choices=ORDER_STATUS_CHOICES, default=ORDER_STATUS_PENDING)
     order_number = models.CharField(max_length=200, blank=True)
+
+    def __str__(self):
+        return str(self.customer)
 
     def save(self, *args, **kwargs):
         if self.order_number == "":
